@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ApartmentServices/Consumers"
 	"github.com/gorilla/mux"
+	"github.com/jonathanpatta/apartmentservices/Consumers"
 	"net/http"
 )
 

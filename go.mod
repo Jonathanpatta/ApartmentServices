@@ -1,4 +1,4 @@
-module ApartmentServices
+module github.com/jonathanpatta/apartmentservices
 
 go 1.17
 

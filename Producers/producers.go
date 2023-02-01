@@ -1,6 +1,6 @@
 package Producers
 
-import "ApartmentServices/Services"
+import "github.com/jonathanpatta/apartmentservices/Services"
 
 type Producer struct {
 	Services []*Services.Service

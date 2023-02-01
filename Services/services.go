@@ -1,6 +1,6 @@
 package Services
 
-import "ApartmentServices/Items"
+import "github.com/jonathanpatta/apartmentservices/Items"
 
 type Service struct {
 	ListedItems []*Items.Item

@@ -1,8 +1,8 @@
 package Items
 
 import (
-	"ApartmentServices/Producers"
-	"ApartmentServices/Services"
+	"github.com/jonathanpatta/apartmentservices/Producers"
+	"github.com/jonathanpatta/apartmentservices/Services"
 )
 
 type Item struct {

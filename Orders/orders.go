@@ -1,8 +1,8 @@
 package Orders
 
 import (
-	"ApartmentServices/Consumers"
-	"ApartmentServices/Items"
+	"github.com/jonathanpatta/apartmentservices/Consumers"
+	"github.com/jonathanpatta/apartmentservices/Items"
 )
 
 type Order struct {
