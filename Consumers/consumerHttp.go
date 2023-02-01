@@ -28,16 +28,19 @@ func (s *ConsumerHttpService) Create(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	consumer, err := s.service.Create(&data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	outData, err := json.Marshal(consumer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	fmt.Fprint(w, string(outData))
@@ -46,23 +49,27 @@ func (s *ConsumerHttpService) Create(w http.ResponseWriter, r *http.Request) {
 func (s *ConsumerHttpService) Read(w http.ResponseWriter, r *http.Request) {
 
 	var data string
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	//err := json.NewDecoder(r.Body).Decode(&data)
+	//if err != nil {
+	//	http.Error(w, err.Error(), http.StatusInternalServerError)
+	//	return
+	//}
+
+	data = r.URL.Query().Get("id")
 
 	consumer, err := s.service.Read(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	outData, err := json.Marshal(consumer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	fmt.Fprint(w, string(outData))
-
 }
 
 func (s *ConsumerHttpService) Update(w http.ResponseWriter, r *http.Request) {
@@ -71,16 +78,19 @@ func (s *ConsumerHttpService) Update(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	consumer, err := s.service.Update(&data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	outData, err := json.Marshal(consumer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	fmt.Fprint(w, string(outData))
@@ -91,16 +101,19 @@ func (s *ConsumerHttpService) Delete(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	consumer, err := s.service.Delete(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	outData, err := json.Marshal(consumer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	fmt.Fprint(w, string(outData))
