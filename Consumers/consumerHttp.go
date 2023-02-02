@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jonathanpatta/apartmentservices/Settings"
 	"log"
 	"net/http"
 )
@@ -12,8 +13,8 @@ type ConsumerHttpService struct {
 	service *ConsumerService
 }
 
-func NewConsumerHttpService() (*ConsumerHttpService, error) {
-	service, err := NewConsumerService()
+func NewConsumerHttpService(settings *Settings.Settings) (*ConsumerHttpService, error) {
+	service, err := NewConsumerService(settings)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,10 @@ func (s *ConsumerHttpService) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, string(outData))
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (s *ConsumerHttpService) Read(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +73,10 @@ func (s *ConsumerHttpService) Read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, string(outData))
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (s *ConsumerHttpService) Update(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +100,10 @@ func (s *ConsumerHttpService) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, string(outData))
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (s *ConsumerHttpService) Delete(w http.ResponseWriter, r *http.Request) {
@@ -116,11 +126,14 @@ func (s *ConsumerHttpService) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, string(outData))
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-func AddSubrouter(r *mux.Router) {
-	server, err := NewConsumerHttpService()
+func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
+	server, err := NewConsumerHttpService(settings)
 	if err != nil {
 		log.Fatal(err)
 	}

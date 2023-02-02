@@ -1,21 +1,41 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/core"
+	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	"github.com/gorilla/mux"
 	"github.com/jonathanpatta/apartmentservices/Consumers"
-	"net/http"
+	"github.com/jonathanpatta/apartmentservices/Settings"
+	"log"
 )
 
+var adapter *gorillamux.GorillaMuxAdapter
+
+func LambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// If no name is provided in the HTTP request body, throw an error
+	fmt.Println("req:", req.Path)
+	resp, err := adapter.ProxyWithContext(ctx, *core.NewSwitchableAPIGatewayRequestV1(&req))
+
+	return *resp.Version1(), err
+
+}
+
 func main() {
-	//cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("ap-south-1"))
-	//if err != nil {
-	//	log.Fatalf("unable to load SDK config, %v", err)
-	//}
-	//
-	//dynamoDbCli := dynamodb.NewFromConfig(cfg)
+
+	settings, err := Settings.NewSettings()
+	if err != nil {
+		log.Fatalf("unable to load settings, %v", err)
+	}
 
 	router := mux.NewRouter()
-	Consumers.AddSubrouter(router)
-	http.Handle("/", router)
-	http.ListenAndServe(":8000", nil)
+	Consumers.AddSubrouter(router, settings)
+	adapter = gorillamux.New(router)
+	//http.Handle("/", router)
+	//http.ListenAndServe(":8000", nil)
+
+	lambda.Start(LambdaHandler)
 }

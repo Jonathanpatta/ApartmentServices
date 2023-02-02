@@ -2,3 +2,8 @@
 .DS_Store
 apartmentservices
 */.exe
+
+
+lambda
+*.zip
+test-data
