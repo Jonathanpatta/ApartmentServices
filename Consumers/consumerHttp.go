@@ -53,13 +53,9 @@ func (s *ConsumerHttpService) Create(w http.ResponseWriter, r *http.Request) {
 func (s *ConsumerHttpService) Read(w http.ResponseWriter, r *http.Request) {
 
 	var data string
-	//err := json.NewDecoder(r.Body).Decode(&data)
-	//if err != nil {
-	//	http.Error(w, err.Error(), http.StatusInternalServerError)
-	//	return
-	//}
 
-	data = r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	data = vars["consumerId"]
 
 	consumer, err := s.service.Read(data)
 	if err != nil {
@@ -159,9 +155,9 @@ func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 	}
 	router := r.PathPrefix("/consumer").Subrouter()
 
+	router.HandleFunc("/list", server.List).Methods("GET", "OPTIONS")
 	router.HandleFunc("/create", server.Create).Methods("POST", "OPTIONS")
-	router.HandleFunc("/", server.Read).Methods("GET", "OPTIONS")
 	router.HandleFunc("/update", server.Update).Methods("POST", "OPTIONS")
 	router.HandleFunc("/delete", server.Delete).Methods("POST", "OPTIONS")
-	router.HandleFunc("/list", server.List).Methods("GET", "OPTIONS")
+	router.HandleFunc("/{consumerId}", server.Read).Methods("GET", "OPTIONS")
 }

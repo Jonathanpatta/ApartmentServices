@@ -9,6 +9,7 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	"github.com/gorilla/mux"
 	"github.com/jonathanpatta/apartmentservices/Consumers"
+	"github.com/jonathanpatta/apartmentservices/Producers"
 	"github.com/jonathanpatta/apartmentservices/Settings"
 	"log"
 )
@@ -33,6 +34,7 @@ func main() {
 
 	router := mux.NewRouter()
 	Consumers.AddSubrouter(router, settings)
+	Producers.AddSubrouter(router, settings)
 	//http.Handle("/", router)
 	//http.ListenAndServe(":8000", nil)
 

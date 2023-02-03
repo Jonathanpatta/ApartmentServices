@@ -1,13 +1,8 @@
 package Orders
 
-import (
-	"github.com/jonathanpatta/apartmentservices/Consumers"
-	"github.com/jonathanpatta/apartmentservices/Items"
-)
-
 type Order struct {
-	CreatedBy *Consumers.Consumer
-	Item      *Items.Item
+	CreatedByConsumerId string
+	ItemId              string
 }
 
 type OrderService struct {

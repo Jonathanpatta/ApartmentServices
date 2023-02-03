@@ -1,16 +1,11 @@
 package Items
 
-import (
-	"github.com/jonathanpatta/apartmentservices/Producers"
-	"github.com/jonathanpatta/apartmentservices/Services"
-)
-
 type Item struct {
-	CreatedBy   *Producers.Producer
-	BelongsTo   *Services.Service
-	Name        string
-	Description string
-	ImageUrls   *[]string
+	CreatedByProducerId string
+	BelongsToServiceId  string
+	Name                string
+	Description         string
+	ImageUrls           []string
 }
 
 type ItemService struct {

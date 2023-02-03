@@ -7,21 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/google/uuid"
 	"github.com/jonathanpatta/apartmentservices/Settings"
-	"time"
+	"github.com/jonathanpatta/apartmentservices/Utils"
 )
 
-var ConsumerKeyVal = "CONSUMER#"
+const ConsumerPrefix = "CONSUMER#"
 
-type Meta struct {
-	PK           string `json:"pk,omitempty"`
-	SK           string `json:"sk,omitempty"`
-	CreatedAt    int64  `json:"created_at,omitempty"`
-	LastModified int64  `json:"last_modified,omitempty"`
-}
 type Consumer struct {
-	Meta
+	Utils.Meta
 	Id     string
 	UserId string `json:"user_id,omitempty"`
 }
@@ -39,16 +32,10 @@ func NewConsumerService(settings *Settings.Settings) (*ConsumerService, error) {
 }
 
 func (s *ConsumerService) Create(in *Consumer) (*Consumer, error) {
-	id, err := uuid.NewUUID()
+	err := in.New("", ConsumerPrefix)
 	if err != nil {
 		return nil, err
 	}
-	now := time.Now().Unix()
-	in.SK = ConsumerKeyVal + id.String()
-	in.Id = id.String()
-	in.PK = ConsumerKeyVal
-	in.CreatedAt = now
-	in.LastModified = now
 
 	item, err := attributevalue.MarshalMap(in)
 	if err != nil {
@@ -73,7 +60,7 @@ func (s *ConsumerService) Create(in *Consumer) (*Consumer, error) {
 
 func (s *ConsumerService) Read(consumerId string) (*Consumer, error) {
 
-	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerKeyVal)).
+	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerPrefix)).
 		And(expression.Key("SK").Equal(expression.Value(consumerId)))
 
 	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).Build()
@@ -111,8 +98,7 @@ func (s *ConsumerService) Update(in *Consumer) (*Consumer, error) {
 		return nil, err
 	}
 
-	now := time.Now().Unix()
-	consumer.LastModified = now
+	consumer.SetLastModifiedNow()
 	consumer.UserId = in.UserId
 
 	item, err := attributevalue.MarshalMap(consumer)
@@ -138,7 +124,7 @@ func (s *ConsumerService) Update(in *Consumer) (*Consumer, error) {
 
 func (s *ConsumerService) List() ([]*Consumer, error) {
 
-	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerKeyVal))
+	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerPrefix))
 
 	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).Build()
 	if err != nil {
