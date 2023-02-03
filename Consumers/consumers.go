@@ -3,6 +3,7 @@ package Consumers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -10,6 +11,8 @@ import (
 	"github.com/jonathanpatta/apartmentservices/Settings"
 	"time"
 )
+
+var ConsumerKeyVal = "CONSUMER#"
 
 type Meta struct {
 	PK           string `json:"pk,omitempty"`
@@ -41,9 +44,9 @@ func (s *ConsumerService) Create(in *Consumer) (*Consumer, error) {
 		return nil, err
 	}
 	now := time.Now().Unix()
-	in.Id = "CONSUMER#" + id.String()
-	in.SK = id.String()
-	in.PK = in.Id
+	in.SK = ConsumerKeyVal + id.String()
+	in.Id = id.String()
+	in.PK = ConsumerKeyVal
 	in.CreatedAt = now
 	in.LastModified = now
 
@@ -70,7 +73,8 @@ func (s *ConsumerService) Create(in *Consumer) (*Consumer, error) {
 
 func (s *ConsumerService) Read(consumerId string) (*Consumer, error) {
 
-	keyFilter := expression.Key("PK").Equal(expression.Value(consumerId))
+	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerKeyVal)).
+		And(expression.Key("SK").Equal(expression.Value(consumerId)))
 
 	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).Build()
 	if err != nil {
@@ -94,7 +98,7 @@ func (s *ConsumerService) Read(consumerId string) (*Consumer, error) {
 		return nil, err
 	}
 	if len(data) != 1 {
-		return nil, errors.New("length of return items not 1 got " + string(len(data)))
+		return nil, errors.New(fmt.Sprintf("length of return items not 1 got %v", len(data)))
 	}
 
 	return &data[0], nil
@@ -102,10 +106,16 @@ func (s *ConsumerService) Read(consumerId string) (*Consumer, error) {
 
 func (s *ConsumerService) Update(in *Consumer) (*Consumer, error) {
 
-	now := time.Now().Unix()
-	in.LastModified = now
+	consumer, err := s.Read(in.SK)
+	if err != nil {
+		return nil, err
+	}
 
-	item, err := attributevalue.MarshalMap(in)
+	now := time.Now().Unix()
+	consumer.LastModified = now
+	consumer.UserId = in.UserId
+
+	item, err := attributevalue.MarshalMap(consumer)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +134,35 @@ func (s *ConsumerService) Update(in *Consumer) (*Consumer, error) {
 	}
 
 	return in, nil
+}
+
+func (s *ConsumerService) List() ([]*Consumer, error) {
+
+	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerKeyVal))
+
+	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).Build()
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := s.db.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 s.dynamodbSettings.TableName,
+		KeyConditionExpression:    expr.KeyCondition(),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeValues: expr.Values(),
+		ExpressionAttributeNames:  expr.Names(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*Consumer
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (s *ConsumerService) Delete(consumerId string) (*Consumer, error) {

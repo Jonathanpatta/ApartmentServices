@@ -132,6 +132,26 @@ func (s *ConsumerHttpService) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *ConsumerHttpService) List(w http.ResponseWriter, r *http.Request) {
+
+	consumer, err := s.service.List()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	outData, err := json.Marshal(consumer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 	server, err := NewConsumerHttpService(settings)
 	if err != nil {
@@ -143,4 +163,5 @@ func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 	router.HandleFunc("/", server.Read).Methods("GET", "OPTIONS")
 	router.HandleFunc("/update", server.Update).Methods("POST", "OPTIONS")
 	router.HandleFunc("/delete", server.Delete).Methods("POST", "OPTIONS")
+	router.HandleFunc("/list", server.List).Methods("GET", "OPTIONS")
 }
