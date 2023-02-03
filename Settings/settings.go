@@ -2,11 +2,9 @@ package Settings
 
 import (
 	"context"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"log"
 )
 
 type Settings struct {
@@ -42,11 +40,6 @@ type DynamoDbSettings struct {
 
 func NewDynamoDbSettings(cfg aws.Config, TableName string) (*DynamoDbSettings, error) {
 	dynamoDbCli := dynamodb.NewFromConfig(cfg)
-	out, err := dynamoDbCli.ListTables(context.Background(), &dynamodb.ListTablesInput{})
-	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
-	}
-	fmt.Println(out.TableNames)
 	return &DynamoDbSettings{
 		TableName: aws.String(TableName),
 		Cli:       dynamoDbCli,
