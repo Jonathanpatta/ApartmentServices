@@ -10,6 +10,7 @@ type Meta struct {
 	SK           string `json:"sk,omitempty"`
 	CreatedAt    int64  `json:"created_at,omitempty"`
 	LastModified int64  `json:"last_modified,omitempty"`
+	IsDeleted    bool   `json:"is_deleted,omitempty"`
 }
 
 func (s *Meta) SetLastModifiedNow() {
@@ -35,6 +36,9 @@ func (s *Meta) GenerateNewId(parentId string, prefix string) error {
 	return nil
 }
 
+// New generates a new PK and SK.
+//
+// Sets Created at and last modified to now.
 func (s *Meta) New(parentId string, prefix string) error {
 	err := s.GenerateNewId(parentId, prefix)
 	if err != nil {

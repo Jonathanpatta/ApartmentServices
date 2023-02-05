@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -16,8 +17,7 @@ const ProducerPrefix = "PRODUCER#"
 
 type Producer struct {
 	Utils.Meta
-	ApartmentNumber string              `json:"apartment_number"`
-	Services        []*Services.Service `json:"services"`
+	ApartmentNumber string `json:"apartment_number"`
 }
 
 type ProducerService struct {
@@ -27,7 +27,7 @@ type ProducerService struct {
 }
 
 func NewProducerService(settings *Settings.Settings) (*ProducerService, error) {
-	servicesCli, err := Services.NewServiceService()
+	servicesCli, err := Services.NewServiceService(settings)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +65,9 @@ func (s *ProducerService) Create(in *Producer) (*Producer, error) {
 	return in, nil
 }
 
-func (s *ProducerService) Read(consumerId string) (*Producer, error) {
+func (s *ProducerService) Read(producerId string) (*Producer, error) {
 	keyFilter := expression.Key("PK").Equal(expression.Value(ProducerPrefix)).
-		And(expression.Key("SK").Equal(expression.Value(consumerId)))
+		And(expression.Key("SK").Equal(expression.Value(producerId)))
 
 	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).Build()
 	if err != nil {
@@ -80,6 +80,7 @@ func (s *ProducerService) Read(consumerId string) (*Producer, error) {
 		FilterExpression:          expr.Filter(),
 		ExpressionAttributeValues: expr.Values(),
 		ExpressionAttributeNames:  expr.Names(),
+		ConsistentRead:            aws.Bool(false),
 	})
 	if err != nil {
 		return nil, err
@@ -143,6 +144,7 @@ func (s *ProducerService) List() ([]*Producer, error) {
 		FilterExpression:          expr.Filter(),
 		ExpressionAttributeValues: expr.Values(),
 		ExpressionAttributeNames:  expr.Names(),
+		ConsistentRead:            aws.Bool(false),
 	})
 	if err != nil {
 		return nil, err
@@ -168,13 +170,42 @@ type AddServiceInput struct {
 
 type RemoveServiceInput struct {
 	producerId string
-	service    *Services.Service
+	serviceId  string
 }
 
-func (s *ProducerService) AddService(in *AddServiceInput) ([]*Services.Service, error) {
-	return nil, nil
-}
+func (s *ProducerService) GetServices(producerId string) ([]*Services.Service, error) {
+	producer, err := s.Read(producerId)
+	if err != nil {
+		return nil, err
+	}
 
-func (s *ProducerService) RemoveService(in *RemoveServiceInput) ([]*Services.Service, error) {
-	return nil, nil
+	keyFilter := expression.Key("PK").Equal(expression.Value(Services.ServicePrefix)).
+		And(expression.Key("SK").BeginsWith(producer.SK))
+
+	filter := expression.Name("IsDeleted").NotEqual(expression.Value(true))
+
+	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).WithFilter(filter).Build()
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := s.db.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 s.dynamodbSettings.TableName,
+		KeyConditionExpression:    expr.KeyCondition(),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeValues: expr.Values(),
+		ExpressionAttributeNames:  expr.Names(),
+		ConsistentRead:            aws.Bool(false),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*Services.Service
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

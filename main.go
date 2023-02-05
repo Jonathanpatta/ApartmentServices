@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	"github.com/gorilla/mux"
 	"github.com/jonathanpatta/apartmentservices/Consumers"
 	"github.com/jonathanpatta/apartmentservices/Producers"
+	"github.com/jonathanpatta/apartmentservices/Services"
 	"github.com/jonathanpatta/apartmentservices/Settings"
 	"log"
+	"net/http"
 )
 
 var adapter *gorillamux.GorillaMuxAdapter
@@ -35,9 +36,10 @@ func main() {
 	router := mux.NewRouter()
 	Consumers.AddSubrouter(router, settings)
 	Producers.AddSubrouter(router, settings)
-	//http.Handle("/", router)
-	//http.ListenAndServe(":8000", nil)
+	Services.AddSubrouter(router, settings)
+	http.Handle("/", router)
+	http.ListenAndServe(":8000", nil)
 
-	adapter = gorillamux.New(router)
-	lambda.Start(LambdaHandler)
+	//adapter = gorillamux.New(router)
+	//lambda.Start(LambdaHandler)
 }
