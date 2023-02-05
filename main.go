@@ -8,6 +8,7 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	"github.com/gorilla/mux"
 	"github.com/jonathanpatta/apartmentservices/Consumers"
+	"github.com/jonathanpatta/apartmentservices/Items"
 	"github.com/jonathanpatta/apartmentservices/Producers"
 	"github.com/jonathanpatta/apartmentservices/Services"
 	"github.com/jonathanpatta/apartmentservices/Settings"
@@ -37,6 +38,8 @@ func main() {
 	Consumers.AddSubrouter(router, settings)
 	Producers.AddSubrouter(router, settings)
 	Services.AddSubrouter(router, settings)
+	Items.AddSubrouter(router, settings)
+
 	http.Handle("/", router)
 	http.ListenAndServe(":8000", nil)
 

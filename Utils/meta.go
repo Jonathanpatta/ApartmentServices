@@ -2,6 +2,7 @@ package Utils
 
 import (
 	"github.com/google/uuid"
+	"strings"
 	"time"
 )
 
@@ -21,15 +22,15 @@ func (s *Meta) SetCreatedAtNow() {
 	now := time.Now().Unix()
 	s.LastModified = now
 }
-func (s *Meta) GenerateNewId(parentId string, prefix string) error {
+func (s *Meta) GenerateNewId(prefix string, parents ...string) error {
 	id, err := uuid.NewUUID()
 	if err != nil {
 		return err
 	}
-	if parentId == "" {
+	if len(parents) == 0 {
 		s.SK = prefix + id.String()
 	} else {
-		s.SK = parentId + "_" + prefix + id.String()
+		s.SK = strings.Join(parents, "_") + "_" + prefix + id.String()
 	}
 	s.PK = prefix
 
@@ -39,8 +40,8 @@ func (s *Meta) GenerateNewId(parentId string, prefix string) error {
 // New generates a new PK and SK.
 //
 // Sets Created at and last modified to now.
-func (s *Meta) New(parentId string, prefix string) error {
-	err := s.GenerateNewId(parentId, prefix)
+func (s *Meta) New(prefix string, parents ...string) error {
+	err := s.GenerateNewId(prefix, parents...)
 	if err != nil {
 		return err
 	}

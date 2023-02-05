@@ -32,7 +32,7 @@ func NewConsumerService(settings *Settings.Settings) (*ConsumerService, error) {
 }
 
 func (s *ConsumerService) Create(in *Consumer) (*Consumer, error) {
-	err := in.New("", ConsumerPrefix)
+	err := in.New(ConsumerPrefix, "")
 	if err != nil {
 		return nil, err
 	}

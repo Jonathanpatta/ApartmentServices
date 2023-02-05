@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/jonathanpatta/apartmentservices/Items"
 	"github.com/jonathanpatta/apartmentservices/Settings"
 	"github.com/jonathanpatta/apartmentservices/Utils"
 )
@@ -46,7 +47,7 @@ func (s *ServiceService) Create(producerId string, in *Service) (*Service, error
 	if err != nil {
 		return nil, err
 	}
-	err = in.New(producerId, ServicePrefix)
+	err = in.New(ServicePrefix, producerId)
 	if err != nil {
 		return nil, err
 	}
@@ -167,6 +168,44 @@ func (s *ServiceService) List() ([]*Service, error) {
 
 func (s *ServiceService) Delete(serviceId string) (*Service, error) {
 	return nil, nil
+}
+
+func (s *ServiceService) GetItems(serviceId string) ([]*Items.Item, error) {
+
+	producer, err := s.Read(serviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	keyFilter := expression.Key("PK").Equal(expression.Value(Items.ItemPrefix)).
+		And(expression.Key("SK").BeginsWith(producer.SK))
+
+	filter := expression.Name("IsDeleted").NotEqual(expression.Value(true))
+
+	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).WithFilter(filter).Build()
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := s.db.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 s.dynamodbSettings.TableName,
+		KeyConditionExpression:    expr.KeyCondition(),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeValues: expr.Values(),
+		ExpressionAttributeNames:  expr.Names(),
+		ConsistentRead:            aws.Bool(false),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*Items.Item
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (s *ServiceService) ProducerCheck(producerId string) error {

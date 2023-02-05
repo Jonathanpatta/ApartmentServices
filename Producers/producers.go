@@ -40,7 +40,7 @@ func NewProducerService(settings *Settings.Settings) (*ProducerService, error) {
 }
 
 func (s *ProducerService) Create(in *Producer) (*Producer, error) {
-	err := in.New("", ProducerPrefix)
+	err := in.New(ProducerPrefix, "")
 	if err != nil {
 		return nil, err
 	}

@@ -149,6 +149,28 @@ func (s *ServiceHttpService) List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *ServiceHttpService) GetItems(w http.ResponseWriter, r *http.Request) {
+
+	serviceId := mux.Vars(r)["serviceId"]
+
+	producer, err := s.service.GetItems(serviceId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	outData, err := json.Marshal(producer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 	server, err := NewServiceHttpService(settings)
 	if err != nil {
@@ -161,4 +183,6 @@ func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 	router.HandleFunc("/update", server.Update).Methods("POST", "OPTIONS")
 	router.HandleFunc("/delete", server.Delete).Methods("POST", "OPTIONS")
 	router.HandleFunc("/{serviceId}", server.Read).Methods("GET", "OPTIONS")
+	router.HandleFunc("/{serviceId}/items", server.GetItems).Methods("GET", "OPTIONS")
+
 }
