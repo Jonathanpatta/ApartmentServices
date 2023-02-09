@@ -9,9 +9,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jonathanpatta/apartmentservices/Consumers"
 	"github.com/jonathanpatta/apartmentservices/Items"
+	"github.com/jonathanpatta/apartmentservices/Orders"
 	"github.com/jonathanpatta/apartmentservices/Producers"
 	"github.com/jonathanpatta/apartmentservices/Services"
 	"github.com/jonathanpatta/apartmentservices/Settings"
+	"github.com/jonathanpatta/apartmentservices/Subscriptions"
 	"log"
 	"net/http"
 )
@@ -39,6 +41,8 @@ func main() {
 	Producers.AddSubrouter(router, settings)
 	Services.AddSubrouter(router, settings)
 	Items.AddSubrouter(router, settings)
+	Orders.AddSubrouter(router, settings)
+	Subscriptions.AddSubrouter(router, settings)
 
 	http.Handle("/", router)
 	http.ListenAndServe(":8000", nil)
