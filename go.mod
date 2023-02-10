@@ -29,4 +29,5 @@ require (
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/awslabs/aws-lambda-go-api-proxy v0.13.3 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 )

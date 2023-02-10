@@ -5,6 +5,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 )
 
 type Settings struct {
@@ -14,8 +17,13 @@ type Settings struct {
 }
 
 func NewSettings() (*Settings, error) {
-	region := "ap-south-1"
-	tableName := "apartment-services"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	tableName := os.Getenv("DYNAMO_TABLE_NAME")
+	region := os.Getenv("AWS_REGION")
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {

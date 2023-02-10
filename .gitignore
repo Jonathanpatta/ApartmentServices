@@ -7,3 +7,4 @@ apartmentservices
 lambda
 *.zip
 test-data
+.env
