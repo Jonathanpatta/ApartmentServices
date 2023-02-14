@@ -30,7 +30,11 @@ func (s *Meta) GenerateNewId(prefix string, parents ...string) error {
 	if len(parents) == 0 {
 		s.SK = prefix + id.String()
 	} else {
-		s.SK = strings.Join(parents, "_") + "_" + prefix + id.String()
+		if len(parents) == 1 && parents[0] == "" {
+			s.SK = prefix + id.String()
+		} else {
+			s.SK = strings.Join(parents, "_") + "_" + prefix + id.String()
+		}
 	}
 	s.PK = prefix
 

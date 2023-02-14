@@ -18,16 +18,11 @@ type Settings struct {
 
 func NewSettings() (*Settings, error) {
 	err := godotenv.Load()
-	tableName := ""
-	region := ""
 	if err != nil {
 		fmt.Println("could not read from .env file")
-		tableName = "apartment-services"
-		region = "ap-south-1"
-	} else {
-		tableName = os.Getenv("DYNAMO_TABLE_NAME")
-		region = os.Getenv("AWS_REGION")
 	}
+	tableName := os.Getenv("DYNAMO_TABLE_NAME")
+	region := os.Getenv("AWS_REGION_CODE")
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
