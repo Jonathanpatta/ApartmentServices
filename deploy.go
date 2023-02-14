@@ -27,7 +27,7 @@ func main() {
 
 	os.Setenv("GOOS", "linux")
 
-	buildCmd := exec.Command("go", "build", "-o", "lambda", "main.go")
+	buildCmd := exec.Command("go", "build", "-o", "lambda", "lambda.go")
 	_, err := CmdRun(buildCmd)
 	if err != nil {
 		panic(err)
