@@ -8,3 +8,4 @@ lambda
 *.zip
 test-data
 .env
+firebase_auth_private_key.json
