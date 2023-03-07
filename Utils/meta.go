@@ -20,7 +20,7 @@ func (s *Meta) SetLastModifiedNow() {
 }
 func (s *Meta) SetCreatedAtNow() {
 	now := time.Now().Unix()
-	s.LastModified = now
+	s.CreatedAt = now
 }
 func (s *Meta) GenerateNewId(prefix string, parents ...string) error {
 	id, err := uuid.NewUUID()

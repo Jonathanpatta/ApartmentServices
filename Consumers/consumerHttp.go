@@ -50,6 +50,32 @@ func (s *ConsumerHttpService) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *ConsumerHttpService) CreateOrGet(w http.ResponseWriter, r *http.Request) {
+	var data Consumer
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	consumer, err := s.service.CreateOrGet(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	outData, err := json.Marshal(consumer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func (s *ConsumerHttpService) Read(w http.ResponseWriter, r *http.Request) {
 
 	var data string
@@ -58,6 +84,31 @@ func (s *ConsumerHttpService) Read(w http.ResponseWriter, r *http.Request) {
 	data = vars["consumerId"]
 
 	consumer, err := s.service.Read(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	outData, err := json.Marshal(consumer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = fmt.Fprint(w, string(outData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (s *ConsumerHttpService) ReadFromUserId(w http.ResponseWriter, r *http.Request) {
+
+	var data string
+
+	vars := mux.Vars(r)
+	data = vars["userId"]
+
+	consumer, err := s.service.ReadFromUserId(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -157,7 +208,9 @@ func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 
 	router.HandleFunc("/list", server.List).Methods("GET", "OPTIONS")
 	router.HandleFunc("/create", server.Create).Methods("POST", "OPTIONS")
+	router.HandleFunc("/createOrGet", server.CreateOrGet).Methods("POST", "OPTIONS")
 	router.HandleFunc("/update", server.Update).Methods("POST", "OPTIONS")
 	router.HandleFunc("/delete", server.Delete).Methods("POST", "OPTIONS")
 	router.HandleFunc("/{consumerId}", server.Read).Methods("GET", "OPTIONS")
+	router.HandleFunc("/readFromUserId/{userId}", server.ReadFromUserId).Methods("GET", "OPTIONS")
 }

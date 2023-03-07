@@ -22,7 +22,15 @@ type Consumer struct {
 
 type Order struct {
 	Utils.Meta
-	ItemId string `json:"item_id,omitempty"`
+	ItemId    string `json:"item_id,omitempty"`
+	ItemName  string `json:"item_name,omitempty"`
+	Note      string `json:"note,omitempty"`
+	Completed string `json:"completed,omitempty"`
+
+	CreatedByUserId      string `json:"created_by_user_id,omitempty"`
+	CreatedByName        string `json:"created_by_name,omitempty"`
+	CreatedByUserEmail   string `json:"created_by_user_email,omitempty"`
+	CreatedByUserPicture string `json:"created_by_user_picture,omitempty"`
 }
 
 type OrderService struct {

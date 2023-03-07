@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jonathanpatta/apartmentservices/Middleware"
 	"github.com/jonathanpatta/apartmentservices/Settings"
 	"log"
 	"net/http"
@@ -33,6 +34,11 @@ func (s *OrderHttpService) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	consumerId := mux.Vars(r)["consumerId"]
+	user := Middleware.GetFirebaseUser(r.Context())
+	data.CreatedByName = user.Name
+	data.CreatedByUserId = user.UserId
+	data.CreatedByUserEmail = user.Email
+	data.CreatedByUserPicture = user.Picture
 
 	order, err := s.service.Create(consumerId, &data)
 	if err != nil {
@@ -155,6 +161,8 @@ func AddSubrouter(r *mux.Router, settings *Settings.Settings) {
 		log.Fatal(err)
 	}
 	router := r.PathPrefix("/order").Subrouter()
+
+	router.Use(settings.MiddlewareService.ValidateToken)
 
 	router.HandleFunc("/list", server.List).Methods("GET", "OPTIONS")
 	router.HandleFunc("/create/{consumerId}", server.Create).Methods("POST", "OPTIONS")

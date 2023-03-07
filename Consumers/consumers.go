@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -56,6 +57,72 @@ func (s *ConsumerService) Create(in *Consumer) (*Consumer, error) {
 	}
 
 	return in, nil
+}
+
+func (s *ConsumerService) CreateOrGet(in *Consumer) (*Consumer, error) {
+	err := in.New(ConsumerPrefix, "")
+	if err != nil {
+		return nil, err
+	}
+
+	userIdConsumer, err := s.ReadFromUserId(in.UserId)
+	if err == nil && userIdConsumer != nil && userIdConsumer.UserId == in.UserId {
+		return userIdConsumer, nil
+	}
+
+	item, err := attributevalue.MarshalMap(in)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.db.PutItem(context.Background(), &dynamodb.PutItemInput{
+		Item:      item,
+		TableName: s.dynamodbSettings.TableName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = attributevalue.UnmarshalMap(item, in)
+	if err != nil {
+		return nil, err
+	}
+
+	return in, nil
+}
+
+func (s *ConsumerService) ReadFromUserId(userId string) (*Consumer, error) {
+	keyFilter := expression.Key("PK").Equal(expression.Value(ConsumerPrefix))
+
+	filterExpression := expression.Name("UserId").Equal(expression.Value(userId))
+
+	expr, err := expression.NewBuilder().WithKeyCondition(keyFilter).WithFilter(filterExpression).Build()
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := s.db.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 s.dynamodbSettings.TableName,
+		KeyConditionExpression:    expr.KeyCondition(),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeValues: expr.Values(),
+		ExpressionAttributeNames:  expr.Names(),
+		ConsistentRead:            aws.Bool(false),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var data []Consumer
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &data)
+	if err != nil {
+		return nil, err
+	}
+	if len(data) != 1 {
+		return nil, errors.New(fmt.Sprintf("length of return items not 1 got %v", len(data)))
+	}
+
+	return &data[0], nil
 }
 
 func (s *ConsumerService) Read(consumerId string) (*Consumer, error) {

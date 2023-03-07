@@ -116,6 +116,7 @@ func (s *ItemService) Update(in *Item) (*Item, error) {
 
 	prevItem.Name = in.Name
 	prevItem.ImageUrls = in.ImageUrls
+	prevItem.Description = in.Description
 	prevItem.Price = in.Price
 	prevItem.SetLastModifiedNow()
 

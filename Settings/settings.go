@@ -2,24 +2,26 @@ package Settings
 
 import (
 	"context"
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/auth"
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/auth"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/joho/godotenv"
+	"github.com/jonathanpatta/apartmentservices/Middleware"
 	"google.golang.org/api/option"
 	"io/ioutil"
 	"os"
 )
 
 type Settings struct {
-	Dynamo       *DynamoDbSettings
-	FirebaseAuth *FirebaseAuthSettings
-	Region       string
-	AwsCfg       aws.Config
+	Dynamo            *DynamoDbSettings
+	FirebaseAuth      *FirebaseAuthSettings
+	Region            string
+	AwsCfg            aws.Config
+	MiddlewareService *Middleware.MiddlwareService
 }
 
 func NewSettings() (*Settings, error) {
@@ -48,10 +50,16 @@ func NewSettings() (*Settings, error) {
 		return nil, err
 	}
 
+	middlewareService, err := Middleware.NewMiddlwareService(firebaseAuthSettings.Auth)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Settings{
-		Dynamo:       dynoDbSettings,
-		FirebaseAuth: firebaseAuthSettings,
-		AwsCfg:       cfg,
+		Dynamo:            dynoDbSettings,
+		FirebaseAuth:      firebaseAuthSettings,
+		MiddlewareService: middlewareService,
+		AwsCfg:            cfg,
 	}, nil
 }
 

@@ -20,13 +20,14 @@ func GetMainRouter() *mux.Router {
 	}
 
 	router := mux.NewRouter()
+	router.StrictSlash(true)
+	router.Use(Middleware.CorsMiddleware)
 	Consumers.AddSubrouter(router, settings)
 	Producers.AddSubrouter(router, settings)
 	Services.AddSubrouter(router, settings)
 	Items.AddSubrouter(router, settings)
 	Orders.AddSubrouter(router, settings)
 	Subscriptions.AddSubrouter(router, settings)
-	router.Use(Middleware.CorsMiddleware)
 
 	return router
 }
