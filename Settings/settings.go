@@ -18,6 +18,7 @@ import (
 
 type Settings struct {
 	Dynamo            *DynamoDbSettings
+	S3Settings        *S3Settings
 	FirebaseAuth      *FirebaseAuthSettings
 	Region            string
 	AwsCfg            aws.Config
@@ -39,6 +40,11 @@ func NewSettings() (*Settings, error) {
 	}
 
 	s3Client := s3.NewFromConfig(cfg)
+	bucketName := os.Getenv("FILES_BUCKET_NAME")
+	s3Settings, err := NewS3Settings(cfg, bucketName)
+	if err != nil {
+		return nil, err
+	}
 
 	firebaseAuthSettings, err := NewFirebaseAuthSettings(s3Client)
 	if err != nil {
@@ -59,7 +65,9 @@ func NewSettings() (*Settings, error) {
 		Dynamo:            dynoDbSettings,
 		FirebaseAuth:      firebaseAuthSettings,
 		MiddlewareService: middlewareService,
+		S3Settings:        s3Settings,
 		AwsCfg:            cfg,
+		Region:            region,
 	}, nil
 }
 
@@ -73,6 +81,19 @@ func NewDynamoDbSettings(cfg aws.Config, TableName string) (*DynamoDbSettings, e
 	return &DynamoDbSettings{
 		TableName: aws.String(TableName),
 		Cli:       dynamoDbCli,
+	}, nil
+}
+
+type S3Settings struct {
+	BucketName string
+	Cli        *s3.Client
+}
+
+func NewS3Settings(cfg aws.Config, BucketName string) (*S3Settings, error) {
+	cli := s3.NewFromConfig(cfg)
+	return &S3Settings{
+		BucketName: BucketName,
+		Cli:        cli,
 	}, nil
 }
 

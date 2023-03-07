@@ -3,6 +3,7 @@ package Router
 import (
 	"github.com/gorilla/mux"
 	"github.com/jonathanpatta/apartmentservices/Consumers"
+	"github.com/jonathanpatta/apartmentservices/Files"
 	"github.com/jonathanpatta/apartmentservices/Items"
 	"github.com/jonathanpatta/apartmentservices/Middleware"
 	"github.com/jonathanpatta/apartmentservices/Orders"
@@ -28,6 +29,7 @@ func GetMainRouter() *mux.Router {
 	Items.AddSubrouter(router, settings)
 	Orders.AddSubrouter(router, settings)
 	Subscriptions.AddSubrouter(router, settings)
+	Files.AddSubrouter(router, settings)
 
 	return router
 }
