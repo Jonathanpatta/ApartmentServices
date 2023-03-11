@@ -11,9 +11,10 @@ import (
 )
 
 type Images struct {
-	FileName string
-	FileType string
-	Bytes    []byte
+	Data     string `json:"data,omitempty"`
+	FileName string `json:"file_name,omitempty"`
+	FileType string `json:"file_type,omitempty"`
+	Bytes    []byte `json:"bytes,omitempty"`
 }
 
 type S3FileService struct {
@@ -34,10 +35,14 @@ func (s *S3FileService) UploadImages(imgs []Images) ([]string, error) {
 	var urls []string
 	for _, img := range imgs {
 		key := "static/images/" + img.FileName
-		_, err := s.cli.PutObject(context.Background(), &s3.PutObjectInput{
+		imgBytes, err := ProcessImage(img.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		_, err = s.cli.PutObject(context.Background(), &s3.PutObjectInput{
 			Key:         aws.String(key),
 			Bucket:      aws.String(s.s3Settings.BucketName),
-			Body:        bytes.NewReader(img.Bytes),
+			Body:        bytes.NewReader(imgBytes),
 			ContentType: aws.String(img.FileType),
 		})
 		if err != nil {
